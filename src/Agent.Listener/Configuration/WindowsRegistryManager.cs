@@ -49,9 +49,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             {
                 if(key == null)
                 {
-                    //today all the subkeys are well defined and exist on the machine. 
-                    //having following in the logs is very less likely but good to log such occurances
-                    Trace.Warning($"Couldnt get the subkey '{subKeyName}. Will not be able to set the value.");
+                    Trace.Warning($"Couldn't get the subkey '{subKeyName}. Proceeding to create subkey.");
+                    key = CreateRegistryKey(hive, subKeyName, writable: true);
+
                     return;
                 }
 
@@ -80,6 +80,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     break;
                 case RegistryHive.LocalMachine:
                     key = Registry.LocalMachine.OpenSubKey(subKeyName, writable);                    
+                    break;
+            }
+            return key;
+        }
+
+        private RegistryKey CreateRegistryKey(RegistryHive hive, string subKeyName, bool writable = true)
+        {
+            RegistryKey key = null;
+            switch (hive)
+            {
+                case RegistryHive.CurrentUser :
+                    key = Registry.CurrentUser.CreateSubKey(subKeyName, writable);                    
+                    break;
+                case RegistryHive.Users :
+                    key = Registry.Users.CreateSubKey(subKeyName, writable);
+                    break;
+                case RegistryHive.LocalMachine:
+                    key = Registry.LocalMachine.CreateSubKey(subKeyName, writable);                    
                     break;
             }
             return key;
